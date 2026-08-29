@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist gettext-domain="ssl-expiration-checker">
+  <schema id="org.gnome.shell.extensions.ssl-expiration-checker" path="/org/gnome/shell/extensions/ssl-expiration-checker/">
+    <key name="sites-list" type="as">
+      <default>['google.com', 'github.com', 'wikipedia.org']</default>
+      <summary>Monitored Sites</summary>
+      <description>List of domain names or host:port to check SSL certificate expiration.</description>
+    </key>
+    <key name="check-interval-minutes" type="i">
+      <default>60</default>
+      <summary>Check Interval in Minutes</summary>
+      <description>How often to automatically check SSL certificate expiration.</description>
+    </key>
+    <key name="warning-days" type="i">
+      <default>7</default>
+      <summary>Warning Threshold (Days)</summary>
+      <description>Number of days before expiration to trigger orange warning status.</description>
+    </key>
+    <key name="notify-on-warning" type="b">
+      <default>true</default>
+      <summary>Notify on Warning or Expired</summary>
+      <description>Send desktop notifications when a certificate is expiring soon or expired.</description>
+    </key>
+  </schema>
+</schemalist>

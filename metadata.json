@@ -1,0 +1,9 @@
+{
+  "name": "SSL Expiration Checker",
+  "description": "Monitors SSL certificate expiration dates for a list of sites with status indicators (Green: all OK, Orange: expiring soon, Red: expired).",
+  "uuid": "ssl-expiration-checker@custom.extension",
+  "shell-version": ["45", "46", "47", "48", "49", "50"],
+  "settings-schema": "org.gnome.shell.extensions.ssl-expiration-checker",
+  "url": "https://github.com/example/sites_SSL_Certificate_Expiration_Checker",
+  "version": 1
+}

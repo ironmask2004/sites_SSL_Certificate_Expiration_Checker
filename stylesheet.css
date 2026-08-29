@@ -1,0 +1,65 @@
+/* SSL Certificate Expiration Checker Styles */
+
+.ssl-status-icon {
+    icon-size: 16px;
+}
+
+.ssl-status-ok {
+    color: #2ec27e; /* Green */
+}
+
+.ssl-status-warning {
+    color: #f57900; /* Orange */
+}
+
+.ssl-status-expired {
+    color: #e01b24; /* Red */
+}
+
+.ssl-status-checking {
+    color: #9a9996; /* Gray */
+}
+
+.ssl-site-item {
+    padding: 6px 12px;
+}
+
+.ssl-site-title {
+    font-weight: bold;
+    font-size: 13px;
+}
+
+.ssl-site-subtitle {
+    font-size: 11px;
+    color: #9a9996;
+}
+
+.ssl-badge-ok {
+    color: #2ec27e;
+    font-weight: bold;
+}
+
+.ssl-badge-warning {
+    color: #f57900;
+    font-weight: bold;
+}
+
+.ssl-badge-expired {
+    color: #e01b24;
+    font-weight: bold;
+}
+
+.ssl-header-box {
+    padding: 8px 12px;
+    spacing: 8px;
+}
+
+.ssl-header-title {
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.ssl-header-subtitle {
+    font-size: 11px;
+    color: #9a9996;
+}
