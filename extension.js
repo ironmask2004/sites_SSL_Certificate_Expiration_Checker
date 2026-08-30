@@ -105,15 +105,23 @@ class SSLIndicator extends PanelMenu.Button {
         }
     }
 
+    setNetworkOffline() {
+        this._isChecking = false;
+        this._icon.icon_name = 'network-offline-symbolic';
+        this._icon.style_class = 'system-status-icon ssl-status-icon ssl-status-checking';
+        this._headerSubtitle.text = _('Waiting for network connection...');
+    }
+
     updateResults(data) {
         this._isChecking = false;
         const overallStatus = data.overall_status || 'ok';
         const results = data.results || [];
         const checkedAt = data.checked_at || '';
 
-        // Update panel icon based on requirements:
-        // - Red icon: when some site's SSL expired or error
-        // - Orange icon: when some site has <= 1 week (or configured warning days)
+        // Update panel icon:
+        // - Red icon: when some site's SSL is expired
+        // - Orange icon: when some site has <= warning_days
+        // - Amber/warning icon: when there's a connection/network error
         // - Green icon: if all SSL are OK
         if (overallStatus === 'expired') {
             this._icon.icon_name = 'security-low-symbolic';
@@ -121,6 +129,9 @@ class SSLIndicator extends PanelMenu.Button {
         } else if (overallStatus === 'warning') {
             this._icon.icon_name = 'security-medium-symbolic';
             this._icon.style_class = 'system-status-icon ssl-status-icon ssl-status-warning';
+        } else if (overallStatus === 'error') {
+            this._icon.icon_name = 'dialog-warning-symbolic';
+            this._icon.style_class = 'system-status-icon ssl-status-icon ssl-status-error';
         } else {
             this._icon.icon_name = 'security-high-symbolic';
             this._icon.style_class = 'system-status-icon ssl-status-icon ssl-status-ok';
@@ -133,7 +144,9 @@ class SSLIndicator extends PanelMenu.Button {
         } else if (overallStatus === 'expired') {
             subtitleText = _('⚠️ Action Required: Expired SSL Certificate(s)!');
         } else if (overallStatus === 'warning') {
-            subtitleText = _('⚡ Warning: Certificate(s) expiring within 1 week!');
+            subtitleText = _('⚡ Warning: Certificate(s) expiring soon!');
+        } else if (overallStatus === 'error') {
+            subtitleText = _('⚠️ Connection error checking one or more sites');
         } else {
             subtitleText = _('✓ All SSL certificates are valid and secure');
         }
@@ -184,10 +197,10 @@ class SSLIndicator extends PanelMenu.Button {
                     : _(`EXPIRED (${item.expiry_str || 'Date unknown'})`);
                 subtitleClass = 'ssl-site-subtitle ssl-badge-expired';
             } else if (item.status === 'error') {
-                iconName = 'dialog-error-symbolic';
-                iconClass = 'ssl-status-expired';
-                statusText = _(`Error: ${item.error || 'Connection failed'}`);
-                subtitleClass = 'ssl-site-subtitle ssl-badge-expired';
+                iconName = 'dialog-warning-symbolic';
+                iconClass = 'ssl-status-error';
+                statusText = _(`Connection error: ${item.error || 'Failed to connect'}`);
+                subtitleClass = 'ssl-site-subtitle ssl-badge-error';
             } else if (item.status === 'warning') {
                 iconName = 'dialog-warning-symbolic';
                 iconClass = 'ssl-status-warning';
@@ -249,6 +262,16 @@ export default class SSLExpirationCheckerExtension extends Extension {
         this._indicator = new SSLIndicator(this);
         Main.panel.addToStatusArea(this.uuid, this._indicator);
 
+        // Network monitoring: wait for network ready before checking
+        this._networkMonitor = Gio.NetworkMonitor.get_default();
+        this._networkChangedId = this._networkMonitor.connect('network-changed', (monitor, available) => {
+            if (available) {
+                this._scheduleCheck(3000);
+            } else if (this._indicator) {
+                this._indicator.setNetworkOffline();
+            }
+        });
+
         // Listen for settings changes
         this._settingsChangedId = this._settings.connect('changed', (settings, key) => {
             if (key === 'sites-list' || key === 'warning-days') {
@@ -258,16 +281,31 @@ export default class SSLExpirationCheckerExtension extends Extension {
             }
         });
 
-        // Run initial check
-        this.checkAllSites();
+        // Delay initial check slightly on startup to let network/DNS fully initialize
+        if (this._networkMonitor.network_available) {
+            this._scheduleCheck(5000);
+        } else {
+            this._indicator.setNetworkOffline();
+        }
         this._resetTimer();
     }
 
     disable() {
+        if (this._scheduledCheckId) {
+            GLib.Source.remove(this._scheduledCheckId);
+            this._scheduledCheckId = null;
+        }
+
         if (this._timeoutId) {
             GLib.Source.remove(this._timeoutId);
             this._timeoutId = null;
         }
+
+        if (this._networkChangedId && this._networkMonitor) {
+            this._networkMonitor.disconnect(this._networkChangedId);
+            this._networkChangedId = null;
+        }
+        this._networkMonitor = null;
 
         if (this._settingsChangedId) {
             this._settings.disconnect(this._settingsChangedId);
@@ -280,6 +318,23 @@ export default class SSLExpirationCheckerExtension extends Extension {
         }
 
         this._settings = null;
+    }
+
+    _scheduleCheck(delayMs = 5000) {
+        if (this._scheduledCheckId) {
+            GLib.Source.remove(this._scheduledCheckId);
+            this._scheduledCheckId = null;
+        }
+
+        this._scheduledCheckId = GLib.timeout_add(
+            GLib.PRIORITY_DEFAULT,
+            delayMs,
+            () => {
+                this._scheduledCheckId = null;
+                this.checkAllSites();
+                return GLib.SOURCE_REMOVE;
+            }
+        );
     }
 
     _resetTimer() {
@@ -301,6 +356,12 @@ export default class SSLExpirationCheckerExtension extends Extension {
 
     async checkAllSites() {
         if (!this._indicator) return;
+
+        // Verify network availability before running
+        if (this._networkMonitor && !this._networkMonitor.network_available) {
+            this._indicator.setNetworkOffline();
+            return;
+        }
 
         this._indicator.setChecking(true);
 
@@ -330,9 +391,15 @@ export default class SSLExpirationCheckerExtension extends Extension {
                         }
                     } else {
                         console.error('SSL Checker script failed:', stderr);
+                        if (this._indicator) {
+                            this._indicator.setChecking(false);
+                        }
                     }
                 } catch (e) {
                     console.error('Error parsing SSL checker response:', e);
+                    if (this._indicator) {
+                        this._indicator.setChecking(false);
+                    }
                 }
             });
         } catch (e) {
@@ -346,17 +413,19 @@ export default class SSLExpirationCheckerExtension extends Extension {
     _checkAndNotify(data) {
         if (!this._settings.get_boolean('notify-on-warning')) return;
 
-        if (data.overall_status === 'expired') {
-            const expiredCount = data.results.filter(r => r.status === 'expired' || r.status === 'error').length;
+        const expiredCount = data.results.filter(r => r.status === 'expired').length;
+        const warningCount = data.results.filter(r => r.status === 'warning').length;
+
+        if (expiredCount > 0) {
             Main.notify(
                 _('SSL Certificate Expired!'),
-                _(`${expiredCount} site(s) have expired SSL certificates or errors. Click the panel icon for details.`)
+                _(`${expiredCount} site(s) have expired SSL certificates. Click the panel icon for details.`)
             );
-        } else if (data.overall_status === 'warning') {
-            const warnCount = data.results.filter(r => r.status === 'warning').length;
+        } else if (warningCount > 0) {
+            const warningDays = this._settings.get_int('warning-days');
             Main.notify(
                 _('SSL Certificate Expiring Soon'),
-                _(`${warnCount} site(s) will expire within a week. Click the panel icon for details.`)
+                _(`${warningCount} site(s) will expire within ${warningDays} days. Click the panel icon for details.`)
             );
         }
     }

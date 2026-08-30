@@ -165,15 +165,17 @@ def main():
             if res:
                 results.append(res)
                 
-    # Sort order: expired first, error second, warning third, ok last
-    status_order = {"expired": 0, "error": 1, "warning": 2, "ok": 3}
-    results.sort(key=lambda x: (status_order.get(x["status"], 4), x["days_left"] if x["days_left"] is not None else -9999))
+    # Sort order: expired first, warning second, error third, ok last
+    status_order = {"expired": 0, "warning": 1, "error": 2, "ok": 3}
+    results.sort(key=lambda x: (status_order.get(x["status"], 4), x["days_left"] if x["days_left"] is not None else 9999))
     
     overall_status = "ok"
-    if any(r["status"] in ("expired", "error") for r in results):
+    if any(r["status"] == "expired" for r in results):
         overall_status = "expired"
     elif any(r["status"] == "warning" for r in results):
         overall_status = "warning"
+    elif any(r["status"] == "error" for r in results):
+        overall_status = "error"
         
     output = {
         "overall_status": overall_status,

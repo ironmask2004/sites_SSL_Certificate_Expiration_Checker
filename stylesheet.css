@@ -16,6 +16,10 @@
     color: #e01b24; /* Red */
 }
 
+.ssl-status-error {
+    color: #e66100; /* Amber/Orange for connection/network error */
+}
+
 .ssl-status-checking {
     color: #9a9996; /* Gray */
 }
@@ -46,6 +50,11 @@
 
 .ssl-badge-expired {
     color: #e01b24;
+    font-weight: bold;
+}
+
+.ssl-badge-error {
+    color: #e66100;
     font-weight: bold;
 }
 
