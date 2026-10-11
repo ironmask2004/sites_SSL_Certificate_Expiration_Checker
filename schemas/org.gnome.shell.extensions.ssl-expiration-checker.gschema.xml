@@ -17,7 +17,7 @@
       <description>Number of days before expiration to trigger orange warning status.</description>
     </key>
     <key name="notify-on-warning" type="b">
-      <default>true</default>
+      <default>false</default>
       <summary>Notify on Warning or Expired</summary>
       <description>Send desktop notifications when a certificate is expiring soon or expired.</description>
     </key>

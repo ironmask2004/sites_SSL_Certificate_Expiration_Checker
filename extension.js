@@ -21,6 +21,7 @@ class SSLIndicator extends PanelMenu.Button {
         this._icon = new St.Icon({
             icon_name: 'security-high-symbolic',
             style_class: 'system-status-icon ssl-status-icon ssl-status-ok',
+            style: 'color: #2ec27e;',
         });
         this.add_child(this._icon);
 
@@ -32,7 +33,7 @@ class SSLIndicator extends PanelMenu.Button {
 
         // Header section
         this._headerBox = new St.BoxLayout({
-            vertical: true,
+            orientation: Clutter.Orientation.VERTICAL,
             style_class: 'ssl-header-box',
             x_expand: true,
         });
@@ -101,6 +102,7 @@ class SSLIndicator extends PanelMenu.Button {
         if (checking) {
             this._icon.icon_name = 'emblem-synchronizing-symbolic';
             this._icon.style_class = 'system-status-icon ssl-status-icon ssl-status-checking';
+            this._icon.style = 'color: #9a9996;';
             this._headerSubtitle.text = _('Checking certificates now...');
         }
     }
@@ -109,6 +111,7 @@ class SSLIndicator extends PanelMenu.Button {
         this._isChecking = false;
         this._icon.icon_name = 'network-offline-symbolic';
         this._icon.style_class = 'system-status-icon ssl-status-icon ssl-status-checking';
+        this._icon.style = 'color: #9a9996;';
         this._headerSubtitle.text = _('Waiting for network connection...');
     }
 
@@ -126,15 +129,19 @@ class SSLIndicator extends PanelMenu.Button {
         if (overallStatus === 'expired') {
             this._icon.icon_name = 'security-low-symbolic';
             this._icon.style_class = 'system-status-icon ssl-status-icon ssl-status-expired';
+            this._icon.style = 'color: #e01b24;';
         } else if (overallStatus === 'warning') {
             this._icon.icon_name = 'security-medium-symbolic';
             this._icon.style_class = 'system-status-icon ssl-status-icon ssl-status-warning';
+            this._icon.style = 'color: #f57900;';
         } else if (overallStatus === 'error') {
             this._icon.icon_name = 'dialog-warning-symbolic';
             this._icon.style_class = 'system-status-icon ssl-status-icon ssl-status-error';
+            this._icon.style = 'color: #e66100;';
         } else {
             this._icon.icon_name = 'security-high-symbolic';
             this._icon.style_class = 'system-status-icon ssl-status-icon ssl-status-ok';
+            this._icon.style = 'color: #2ec27e;';
         }
 
         // Header Subtitle
@@ -179,18 +186,20 @@ class SSLIndicator extends PanelMenu.Button {
 
             const rowBox = new St.BoxLayout({
                 x_expand: true,
-                vertical: false,
+                orientation: Clutter.Orientation.HORIZONTAL,
                 style: 'spacing: 10px;',
             });
 
             let iconName = 'security-high-symbolic';
             let iconClass = 'ssl-status-ok';
+            let iconColor = '#2ec27e';
             let statusText = '';
             let subtitleClass = 'ssl-site-subtitle';
 
             if (item.status === 'expired') {
                 iconName = 'dialog-error-symbolic';
                 iconClass = 'ssl-status-expired';
+                iconColor = '#e01b24';
                 const daysAbs = item.days_left !== null ? Math.abs(item.days_left) : 0;
                 statusText = item.days_left !== null 
                     ? _(`EXPIRED ${daysAbs.toFixed(0)} days ago (${item.expiry_str})`)
@@ -199,16 +208,19 @@ class SSLIndicator extends PanelMenu.Button {
             } else if (item.status === 'error') {
                 iconName = 'dialog-warning-symbolic';
                 iconClass = 'ssl-status-error';
+                iconColor = '#e66100';
                 statusText = _(`Connection error: ${item.error || 'Failed to connect'}`);
                 subtitleClass = 'ssl-site-subtitle ssl-badge-error';
             } else if (item.status === 'warning') {
                 iconName = 'dialog-warning-symbolic';
                 iconClass = 'ssl-status-warning';
+                iconColor = '#f57900';
                 statusText = _(`Expires in ${item.days_left} days! (${item.expiry_str})`);
                 subtitleClass = 'ssl-site-subtitle ssl-badge-warning';
             } else {
                 iconName = 'emblem-ok-symbolic';
                 iconClass = 'ssl-status-ok';
+                iconColor = '#2ec27e';
                 statusText = _(`Expires in ${item.days_left} days (${item.expiry_str})`);
                 subtitleClass = 'ssl-site-subtitle ssl-badge-ok';
             }
@@ -216,10 +228,11 @@ class SSLIndicator extends PanelMenu.Button {
             const itemIcon = new St.Icon({
                 icon_name: iconName,
                 style_class: `ssl-status-icon ${iconClass}`,
+                style: `color: ${iconColor};`,
             });
 
             const textBox = new St.BoxLayout({
-                vertical: true,
+                orientation: Clutter.Orientation.VERTICAL,
                 x_expand: true,
             });
 

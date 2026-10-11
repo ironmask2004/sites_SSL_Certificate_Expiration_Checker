@@ -4,24 +4,50 @@
     icon-size: 16px;
 }
 
-.ssl-status-ok {
-    color: #2ec27e; /* Green */
+/* Panel and menu status icons with high specificity and !important to prevent taskbar/theme override */
+.ssl-status-ok,
+#panel .ssl-status-ok,
+#panel .panel-button .ssl-status-ok,
+#panel .system-status-icon.ssl-status-ok,
+.system-status-icon.ssl-status-ok,
+.popup-menu .ssl-status-ok {
+    color: #2ec27e !important; /* Green */
 }
 
-.ssl-status-warning {
-    color: #f57900; /* Orange */
+.ssl-status-warning,
+#panel .ssl-status-warning,
+#panel .panel-button .ssl-status-warning,
+#panel .system-status-icon.ssl-status-warning,
+.system-status-icon.ssl-status-warning,
+.popup-menu .ssl-status-warning {
+    color: #f57900 !important; /* Orange */
 }
 
-.ssl-status-expired {
-    color: #e01b24; /* Red */
+.ssl-status-expired,
+#panel .ssl-status-expired,
+#panel .panel-button .ssl-status-expired,
+#panel .system-status-icon.ssl-status-expired,
+.system-status-icon.ssl-status-expired,
+.popup-menu .ssl-status-expired {
+    color: #e01b24 !important; /* Red */
 }
 
-.ssl-status-error {
-    color: #e66100; /* Amber/Orange for connection/network error */
+.ssl-status-error,
+#panel .ssl-status-error,
+#panel .panel-button .ssl-status-error,
+#panel .system-status-icon.ssl-status-error,
+.system-status-icon.ssl-status-error,
+.popup-menu .ssl-status-error {
+    color: #e66100 !important; /* Amber/Orange for connection/network error */
 }
 
-.ssl-status-checking {
-    color: #9a9996; /* Gray */
+.ssl-status-checking,
+#panel .ssl-status-checking,
+#panel .panel-button .ssl-status-checking,
+#panel .system-status-icon.ssl-status-checking,
+.system-status-icon.ssl-status-checking,
+.popup-menu .ssl-status-checking {
+    color: #9a9996 !important; /* Gray */
 }
 
 .ssl-site-item {
@@ -39,22 +65,22 @@
 }
 
 .ssl-badge-ok {
-    color: #2ec27e;
+    color: #2ec27e !important;
     font-weight: bold;
 }
 
 .ssl-badge-warning {
-    color: #f57900;
+    color: #f57900 !important;
     font-weight: bold;
 }
 
 .ssl-badge-expired {
-    color: #e01b24;
+    color: #e01b24 !important;
     font-weight: bold;
 }
 
 .ssl-badge-error {
-    color: #e66100;
+    color: #e66100 !important;
     font-weight: bold;
 }
 
